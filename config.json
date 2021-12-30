@@ -1,0 +1,10 @@
+{
+	"username": "messenger-username",
+	"password": "messenger-password",
+
+	"options": {
+		"puppeteer": {
+			"args": ["--no-sandbox"]
+		}
+	}
+}

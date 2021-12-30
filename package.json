@@ -1,0 +1,29 @@
+{
+  "name": "botmessenger",
+  "version": "0.0.1",
+  "description": "A Messenger chat bot.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TPMBlack/NodeJS-BotMessenger.git"
+  },
+  "author": "TPMBlack",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TPMBlack/NodeJS-BotMessenger/issues"
+  },
+  "homepage": "https://github.com/TPMBlack/NodeJS-BotMessenger#readme",
+  "dependencies": {
+    "facebook-messenger-puppeteer": "github:TPMBlack/NodeJS-MessengerPuppeteer"
+  },
+  "devDependencies": {
+    "eslint": "^8.5.0"
+  },
+  "engines": {
+    "node": "16.x"
+  }
+}
