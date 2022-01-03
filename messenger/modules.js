@@ -40,10 +40,25 @@ const preLoad = async () => {
 
 const botAdmins = [];
 let botCommandPrefix = '/TPB';
+let botCommandPrefixConceal = false;
 
 const postLoad = async () => {
     for (const botModule in botModules) {
         if (botModules[botModule].onFinishLoad) botModules[botModule].onFinishLoad();
+    }
+};
+
+const configure = async function(options) {
+    if (options.admins) {
+        botAdmins.push(...options.admins);
+    }
+
+    if (options.commandPrefix) {
+        botCommandPrefix = options.commandPrefix;
+    }
+
+    if (options.commandPrefixConceal) {
+        botCommandPrefixConceal = options.commandPrefixConceal;
     }
 };
 
@@ -67,10 +82,15 @@ const listen = async function(bot, response) {
 const command = async function(bot, response) {
     const message = response.body;
 
-    if (message.toLowerCase().startsWith(botCommandPrefix.toLowerCase())) {
+    if (!botCommandPrefixConceal
+        ? message.toLowerCase().startsWith(botCommandPrefix.toLowerCase())
+        : message.split(' ')[1].toLowerCase().startsWith(botCommandPrefix.toLowerCase())
+    ) {
         if (bot.uid === response.sender) return;
 
-        const botCommand = message.split(' ')[1].toLowerCase();
+        const botCommand = !botCommandPrefixConceal
+            ? message.split(' ')[1].toLowerCase()
+            : message.split(' ')[2].toLowerCase();
         if (botCommand in botCommandMap) {
             const threadID = response.thread;
 
@@ -81,7 +101,10 @@ const command = async function(bot, response) {
             }
 
             try {
-                const params = message.split(' ').length >= 2 ? message.replace(/^([^ ]+ ){2}/, '') : '';
+                const slices = !botCommandPrefixConceal ? 2 : 3;
+                const params = message.split(' ').length >= slices
+                    ? message.replace(new RegExp('^([^ ]+ ){' + slices + '}'), '')
+                    : '';
                 const commandResponse = await botCommandMap[botCommand].function(response, params);
                 if (commandResponse) {
                     bot.delayedSendMessage(threadID, commandResponse);
@@ -104,11 +127,13 @@ module.exports = {
     initialize,
     preLoad,
     postLoad,
+    configure,
     listen,
     botModules,
     _botCommandName,
     botCommandMap,
     botAdmins,
     botCommandPrefix,
+    botCommandPrefixConceal,
     checkAdminCommand,
 };

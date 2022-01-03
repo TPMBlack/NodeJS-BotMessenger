@@ -5,6 +5,11 @@
 	"options": {
 		"puppeteer": {
 			"args": ["--no-sandbox"]
+		},
+		"modules": {
+			"admins": [],
+			"commandPrefix": "/TPB",
+			"commandPrefixConceal": false
 		}
 	}
 }

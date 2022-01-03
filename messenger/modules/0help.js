@@ -10,19 +10,24 @@ module.exports = function() {
             const helpHeader = 'Bot Commands' + '\n' + '-----------------';
 
             const helpBody1 = [];
+            const commandPrefix = botModules.botCommandPrefixConceal ? 'XXX ' : '' + botModules.botCommandPrefix;
             let tempCompareValue = null;
             for (const botCommand of Object.keys(botModules.botCommandMap)) {
                 const adminCommand = botModules.checkAdminCommand(botCommand);
                 const checkIsAdmin = botModules.botAdmins.indexOf(response.authorId) == -1;
                 if (adminCommand && checkIsAdmin) continue;
 
-                if (tempCompareValue !== botModules.botCommandMap[botCommand].name) {
-                    helpBody1.push(`${'\n' + botModules.botCommandMap[botCommand].name}`);
-                    helpBody1.push(`${'- ' + botModules.botCommandMap[botCommand].description}`);
-                }
-                tempCompareValue = botModules.botCommandMap[botCommand].name;
+                const commandName = botModules.botCommandMap[botCommand].name;
+                if (tempCompareValue !== commandName) {
+                    helpBody1.push(`\n${commandName}`);
+                    helpBody1.push(`- ${botModules.botCommandMap[botCommand].description}`);
 
-                helpBody1.push(`${botModules.botCommandPrefix} ${botCommand}`);
+                    const commandParams = botModules.botCommandMap[botCommand].params;
+                    if (commandParams) helpBody1.push(`- ${botCommand} ${commandParams}`);
+                }
+                tempCompareValue = commandName;
+
+                helpBody1.push(`${commandPrefix + botCommand}`);
             }
 
             const helpBody2 = [];

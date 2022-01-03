@@ -19,6 +19,9 @@ const startBot = async (username, password, options) => {
 
         fs.writeFileSync(_botAppState, JSON.stringify(await messenger.getSession()));
 
+        // Modules Configuration
+        await botModules.configure(options.modules);
+
         // Modules Pre Load
         await botModules.preLoad();
 

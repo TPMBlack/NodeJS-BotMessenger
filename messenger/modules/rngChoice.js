@@ -2,6 +2,7 @@ module.exports = function() {
     return {
         name: 'Choices',
         command: ['Choice'],
+        params: '(Words)',
         admin: false,
         description: 'Bot make choice for you.',
         function: function(response, params) {

@@ -2,6 +2,7 @@ module.exports = function() {
     return {
         name: 'Random Number',
         command: ['RN', 'Togel'],
+        params: '(Min Num) (Max Num)',
         admin: false,
         description: 'Random number from range.',
         function: function(response, params) {
