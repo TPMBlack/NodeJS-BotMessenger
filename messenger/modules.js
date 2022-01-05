@@ -1,3 +1,5 @@
+const botUtils = require('./utils');
+const { generateSlug } = require('random-word-slugs');
 const fs = require('fs');
 const path = require('path');
 
@@ -22,7 +24,7 @@ const initialize = async (bot) => {
     }
 };
 
-const _botCommandName = [];
+const _botCommands = {};
 const botCommandMap = {};
 const preLoad = async () => {
     for (const botModule in botModules) {
@@ -31,16 +33,12 @@ const preLoad = async () => {
         if (!botModules[botModule].command) continue;
 
         for (const command of botModules[botModule].command) {
-            _botCommandName.push(command);
+            _botCommands[command] = null;
 
             botCommandMap[command.toLowerCase()] = botModules[botModule];
         }
     }
 };
-
-const botAdmins = [];
-let botCommandPrefix = '/TPB';
-let botCommandPrefixConceal = false;
 
 const postLoad = async () => {
     for (const botModule in botModules) {
@@ -48,18 +46,14 @@ const postLoad = async () => {
     }
 };
 
-const configure = async function(options) {
-    if (options.admins) {
-        botAdmins.push(...options.admins);
-    }
+const configure = async function(bot, options) {
+    if (options.admins) bot.admins.push(...options.admins);
 
-    if (options.commandPrefix) {
-        botCommandPrefix = options.commandPrefix;
-    }
+    if (options.commandPrefix) bot.commandPrefix = options.commandPrefix;
 
-    if (options.commandPrefixConceal) {
-        botCommandPrefixConceal = options.commandPrefixConceal;
-    }
+    if (options.commandRandomize) bot.commandRandomize = options.commandRandomize;
+
+    if (options.commandConceal) bot.commandConceal = options.commandConceal;
 };
 
 const checkAdminCommand = function(command) {
@@ -70,57 +64,62 @@ const listen = async function(bot, response) {
     for (const botModule in botModules) {
         if (!botModules[botModule].listen) continue;
 
-        if (botModules[botModule].admin && !botAdmins.includes(response.sender)) continue;
+        if (botModules[botModule].admin && !bot.admins.includes(response.sender)) continue;
 
         const moduleResponse = await botModules[botModule].function(response);
         if (moduleResponse) bot.delayedSendMessage(response.thread, moduleResponse);
     }
 
-    command(bot, response);
+    return await command(bot, response);
 };
 
 const command = async function(bot, response) {
     const message = response.body;
 
-    if (!botCommandPrefixConceal
-        ? message.toLowerCase().startsWith(botCommandPrefix.toLowerCase())
-        : message.split(' ')[1].toLowerCase().startsWith(botCommandPrefix.toLowerCase())
+    if (bot.commandConceal
+        ? message.split(' ')[1]?.toLowerCase().startsWith(bot.commandPrefix.toLowerCase())
+        : message.toLowerCase().startsWith(bot.commandPrefix.toLowerCase())
     ) {
-        if (bot.uid === response.sender) return;
+        if (bot.uid === response.sender) return false;
 
-        const botCommand = !botCommandPrefixConceal
-            ? message.split(' ')[1].toLowerCase()
-            : message.split(' ')[2].toLowerCase();
+        const botCommand = bot.commandConceal
+            ? message.split(' ')[2].toLowerCase()
+            : message.split(' ')[1].toLowerCase();
         if (botCommand in botCommandMap) {
             const threadID = response.thread;
 
-            if (checkAdminCommand(botCommand) && !botAdmins.includes(response.sender)) {
+            if (checkAdminCommand(botCommand) && !bot.admins.includes(response.sender)) {
                 bot.delayedSendMessage(threadID, 'You don\'t have permission to run this command!');
 
-                return;
+                return true;
             }
 
             try {
-                const slices = !botCommandPrefixConceal ? 2 : 3;
+                const slices = bot.commandConceal ? 3 : 2;
                 const params = message.split(' ').length >= slices
                     ? message.replace(new RegExp('^([^ ]+ ){' + slices + '}'), '')
                     : '';
                 const commandResponse = await botCommandMap[botCommand].function(response, params);
                 if (commandResponse) {
-                    bot.delayedSendMessage(threadID, commandResponse);
+                    const commandMessage = (bot.commandRandomize && !botCommandMap[botCommand].customRandomize)
+                        ? `${botUtils.capitalizeFirstLetter(generateSlug(1))} ` + commandResponse
+                        : commandResponse;
+                    bot.delayedSendMessage(threadID, commandMessage);
 
-                    return;
+                    return true;
                 }
             } catch (err) {
                 console.error('Bot command ' + `${botCommand} error!`);
                 console.error(err);
 
-                return;
+                return false;
             }
         }
 
-        return;
+        return true;
     }
+
+    return false;
 };
 
 module.exports = {
@@ -130,10 +129,7 @@ module.exports = {
     configure,
     listen,
     botModules,
-    _botCommandName,
+    _botCommands,
     botCommandMap,
-    botAdmins,
-    botCommandPrefix,
-    botCommandPrefixConceal,
     checkAdminCommand,
 };

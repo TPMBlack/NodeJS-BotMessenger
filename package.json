@@ -1,6 +1,6 @@
 {
   "name": "botmessenger",
-  "version": "0.0.5",
+  "version": "0.0.8",
   "description": "A Messenger chat bot.",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/TPMBlack/NodeJS-BotMessenger#readme",
   "dependencies": {
-    "facebook-messenger-puppeteer": "github:TPMBlack/NodeJS-MessengerPuppeteer"
+    "facebook-messenger-puppeteer": "github:TPMBlack/NodeJS-MessengerPuppeteer",
+    "random-word-slugs": "^0.1.6"
   },
   "devDependencies": {
     "eslint": "^8.5.0"

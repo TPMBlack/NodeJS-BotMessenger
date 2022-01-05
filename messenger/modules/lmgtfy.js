@@ -8,7 +8,7 @@ module.exports = function() {
         function: function(respone, params) {
             if (!params) throw Error('You must input the keywords!');
 
-            return 'https://lmgtfy.com/?q=' + encodeURIComponent(params);
+            return 'https://lmgtfy.app/?q=' + encodeURIComponent(params);
         },
     };
 };

@@ -1,20 +1,33 @@
 const botModules = require('../modules');
+const utils = require('../utils');
 
-module.exports = function() {
+module.exports = function(bot) {
     return {
         name: 'Help',
         command: ['Help'],
         admin: false,
         description: 'Provides help about this bot.',
+        customRandomize: true,
         function: function(response) {
-            const helpHeader = 'Bot Commands' + '\n' + '-----------------';
+            const botString = bot.commandRandomize
+                ? utils.capitalizeFirstLetter(utils.randomString(3))
+                : 'Bot';
+            const helpHeader = `${botString} Commands` + '\n' + '-----------------';
 
             const helpBody1 = [];
-            const commandPrefix = botModules.botCommandPrefixConceal ? 'XXX ' : '' + botModules.botCommandPrefix;
+            if (bot.commandConceal) helpBody1.push('*The first word of the command can be anything.');
+            const concealString = bot.commandRandomize
+                ? utils.randomString(3).toUpperCase()
+                : 'XXX';
+            const commandPrefix = bot.commandConceal
+                ? `${concealString} ` + bot.commandPrefix
+                : bot.commandPrefix;
             let tempCompareValue = null;
-            for (const botCommand of Object.keys(botModules.botCommandMap)) {
+            for (const _botCommand of Object.keys(botModules._botCommands)) {
+                const botCommand = _botCommand.toLowerCase();
+
                 const adminCommand = botModules.checkAdminCommand(botCommand);
-                const checkIsAdmin = botModules.botAdmins.indexOf(response.authorId) == -1;
+                const checkIsAdmin = bot.admins.indexOf(response.authorId) == -1;
                 if (adminCommand && checkIsAdmin) continue;
 
                 const commandName = botModules.botCommandMap[botCommand].name;
@@ -23,11 +36,11 @@ module.exports = function() {
                     helpBody1.push(`- ${botModules.botCommandMap[botCommand].description}`);
 
                     const commandParams = botModules.botCommandMap[botCommand].params;
-                    if (commandParams) helpBody1.push(`- ${botCommand} ${commandParams}`);
+                    if (commandParams) helpBody1.push(`= ${_botCommand} ${commandParams}`);
                 }
                 tempCompareValue = commandName;
 
-                helpBody1.push(`${commandPrefix + botCommand}`);
+                helpBody1.push(`${commandPrefix} ${_botCommand}`);
             }
 
             const helpBody2 = [];

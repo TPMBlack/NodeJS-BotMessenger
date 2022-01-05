@@ -1,5 +1,6 @@
 const Bot = require('facebook-messenger-puppeteer');
 const botModules = require('./modules');
+const botUtils = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -7,7 +8,7 @@ const _botAppState = path.join(__dirname, '.appstate.json');
 const messenger = new Bot({
     selfListen: true,
     session: fs.existsSync(_botAppState) ? JSON.parse(fs.readFileSync(_botAppState, 'utf8')) : null,
-    //debug: log.level === 'verbose' ? true : false
+    //debug: true
 });
 botModules.initialize(messenger);
 
@@ -20,7 +21,7 @@ const startBot = async (username, password, options) => {
         fs.writeFileSync(_botAppState, JSON.stringify(await messenger.getSession()));
 
         // Modules Configuration
-        await botModules.configure(options.modules);
+        await botModules.configure(messenger, options.modules);
 
         // Modules Pre Load
         await botModules.preLoad();
@@ -36,10 +37,10 @@ const startBot = async (username, password, options) => {
         console.log('Bot listen response: ' + JSON.stringify(response));
 
         // Modules
-        botModules.listen(messenger, response);
+        if (await botModules.listen(messenger, response)) return;
 
         // Read Other Message
-        messenger.delayedReadMessage(response.thread);
+        if (messenger.uid !== response.sender) await messenger.delayedReadMessage(response.thread);
     });
 
     // Modules Post Load
@@ -48,8 +49,13 @@ const startBot = async (username, password, options) => {
     console.log('Bot loading complete.');
 };
 
+messenger.admins = [];
+messenger.commandPrefix = '/TPB';
+messenger.commandRandomize = false;
+messenger.commandConceal = false;
+
 messenger.delayedReadMessage = async function(threadID) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await botUtils.sleep(1000);
 
     console.log('Bot reading ' + `"${threadID}"`);
 
@@ -57,7 +63,7 @@ messenger.delayedReadMessage = async function(threadID) {
 };
 
 messenger.delayedSendMessage = async function(threadID, message) {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await botUtils.sleep(1500);
 
     console.log('Bot sending ' + `"${message}" to "${threadID}".`);
 
