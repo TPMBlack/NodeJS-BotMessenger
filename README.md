@@ -1,5 +1,5 @@
 # Bot Messenger
-A Messenger chat bot. Uses [facebook-messenger-puppeteer](https://github.com/featherbear/facebook-messenger-puppeteer) as the main component, the bot runs [Mobile Messenger](https://mobile.facebook.com/messages/) from a headless instance of Chromium using [puppeteer](https://github.com/puppeteer/puppeteer).
+A Messenger chat bot. Uses [fork](https://github.com/TPMBlack/NodeJS-MessengerPuppeteer) of [facebook-messenger-puppeteer](https://github.com/featherbear/facebook-messenger-puppeteer) as the main component, the bot runs [Mobile Messenger](https://mobile.facebook.com/messages/) from a headless instance of Chromium using [puppeteer](https://github.com/puppeteer/puppeteer).
 
 Dependencies
 -----
